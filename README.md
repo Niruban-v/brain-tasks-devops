@@ -1,91 +1,202 @@
-DevOps Practice Project – Dist Directory
+# Brain Tasks App - DevOps Deployment
 
-This repository contains the production-ready build files (dist folder) for DevOps practice and deployment exercises.
+## Project Overview
 
-It is intentionally structured to help learners focus on CI/CD pipelines, hosting, containerization, and infrastructure setup rather than application development.
+This project demonstrates end-to-end deployment of a React application using Docker, AWS ECR, Amazon EKS, Kubernetes, AWS CodeBuild, and AWS CodePipeline.
 
-📁 What This Repository Contains
+The application was containerized, pushed to AWS Elastic Container Registry (ECR), and deployed into an Amazon EKS Kubernetes cluster using Kubernetes deployment and service manifests.
 
-dist/ – Compiled and production-ready static files
+---
 
-HTML
+# Technologies Used
 
-CSS
+* React Application
+* Docker
+* AWS ECR
+* AWS EKS
+* Kubernetes
+* AWS EC2
+* AWS CodeBuild
+* AWS CodePipeline
+* CloudWatch Logs
+* GitHub
 
-JavaScript
+---
 
-Assets (images, fonts, etc.)
+# Application Repository
 
-These files are ready to deploy to:
+Original Repository:
 
-Web servers (Nginx / Apache)
+https://github.com/Vennilavanguvi/Brain-Tasks-App.git
 
-Cloud platforms (AWS S3, Azure Blob, GCP Storage)
+---
 
-Containerized environments (Docker + Nginx)
+# Dockerization
 
-Kubernetes clusters
+## Build Docker Image
 
-CI/CD pipeline demonstrations
+```bash
+docker build -t brain-tasks-app .
+```
 
-🎯 Purpose of This Repository
+## Run Docker Container
 
-This repository is designed for:
+```bash
+docker run -d -p 3000:80 brain-tasks-app
+```
 
-DevOps beginners
+---
 
-CI/CD practice
+# AWS ECR
 
-Deployment pipeline testing
+## Create ECR Repository
 
-Docker & Kubernetes deployment exercises
+```bash
+aws ecr create-repository --repository-name brain-tasks-app --region ap-south-1
+```
 
-Web server configuration practice
+## Login to ECR
 
-Reverse proxy and load balancer setup
+```bash
+aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 678419967121.dkr.ecr.ap-south-1.amazonaws.com
+```
 
-The goal is to simulate real-world deployment scenarios using already built application files.
+## Tag Docker Image
 
-❓ Why is there NO package.json?
+```bash
+ docker tag brain-tasks-app:latest 678419967121.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+```
 
-You may notice that this repository does not include:
+## Push Docker Image
 
-package.json
+```bash
+docker push 678419967121.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+```
 
-node_modules
+---
 
-Source code (src/)
+# Kubernetes Deployment
 
-Build tools configuration
+## deployment.yaml
 
-✅ Reason:
+Creates Kubernetes deployment for Brain Tasks application.
 
-This repository only contains the final production build output (dist), not the development source code.
+## service.yaml
 
-In a typical project:
+Creates Kubernetes LoadBalancer service to expose the application publicly.
 
-Developers write source code.
+---
 
-The project is built using tools like:
+# Amazon EKS Setup
 
-Node.js
+## Create EKS Cluster
 
-Webpack
+```bash
+eksctl create cluster \
+--name brain-tasks-cluster \
+--region ap-south-1 \
+--nodegroup-name workers \
+--node-type t3.small \
+--nodes 1 \
+--managed
+```
 
-Vite
+## Verify Nodes
 
-React (or other frameworks)
+```bash
+kubectl get nodes
+```
 
-A dist/ folder is generated.
+---
 
-Only the production build is deployed to servers.
+# Deploy Application to Kubernetes
 
-This repository represents step 4 only.
+```bash
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+```
 
-Since this is already the compiled output:
+## Verify Services
 
-No dependencies are required
+```bash
+kubectl get svc
+```
 
-No build process is required
+---
 
-No package.json is needed
+# Application LoadBalancer URL
+
+http://a1c60bbee10464848987ddaa9354169f-2139949820.ap-south-1.elb.amazonaws.com
+
+---
+
+# AWS CodeBuild
+
+CodeBuild was configured to:
+
+* Pull source from GitHub
+* Build Docker image
+* Push image to AWS ECR
+* Deploy Kubernetes manifests to EKS
+
+The build process is defined in:
+
+```bash
+buildspec.yml
+```
+
+---
+
+# AWS CodePipeline
+
+Pipeline Flow:
+
+GitHub → CodeBuild → ECR → EKS Deployment
+
+Stages:
+
+1. Source
+2. Build
+3. Deploy
+
+---
+
+# CloudWatch Monitoring
+
+CloudWatch Logs were used to monitor:
+
+* Build logs
+* Deployment logs
+* Kubernetes application logs
+
+---
+
+# Submission Items
+
+* GitHub Repository
+* Dockerfile
+* deployment.yaml
+* service.yaml
+* buildspec.yml
+* README.md
+* Screenshots
+* LoadBalancer URL
+
+---
+
+# Cleanup
+
+To avoid AWS charges:
+
+```bash
+eksctl delete cluster --name brain-tasks-cluster --region ap-south-1
+```
+
+Delete:
+
+* EKS Cluster
+* EC2 Instance
+* ECR Repository
+* LoadBalancer
+
+---
