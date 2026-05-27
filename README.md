@@ -184,19 +184,3 @@ CloudWatch Logs were used to monitor:
 
 ---
 
-# Cleanup
-
-To avoid AWS charges:
-
-```bash
-eksctl delete cluster --name brain-tasks-cluster --region ap-south-1
-```
-
-Delete:
-
-* EKS Cluster
-* EC2 Instance
-* ECR Repository
-* LoadBalancer
-
----
